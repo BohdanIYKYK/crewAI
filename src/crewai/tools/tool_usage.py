@@ -1,5 +1,6 @@
 import ast
 import datetime
+import json
 import os
 import time
 from difflib import SequenceMatcher
@@ -352,14 +353,18 @@ class ToolUsage:
     def _original_tool_calling(self, tool_string: str, raise_error: bool = False):
         tool_name = self.action.tool
         tool = self._select_tool(tool_name)
+        
         try:
+            arguments = json.loads(self.action.tool_input)
+        except Exception:
             tool_input = self._validate_tool_input(self.action.tool_input)
             arguments = ast.literal_eval(tool_input)
+
         except Exception:
             if raise_error:
                 raise
             else:
-                return ToolUsageErrorException(  # type: ignore # Incompatible return value type (got "ToolUsageErrorException", expected "ToolCalling | InstructorToolCalling")
+                return ToolUsageErrorException(  
                     f'{self._i18n.errors("tool_arguments_error")}'
                 )
 
